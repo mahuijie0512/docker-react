@@ -19,3 +19,26 @@ jobs:
       
     - name: Run tests
       run: docker run mhj/docker-react npm run test -- --coverage --watchAll=false
+    
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Generate deployment package
+      run: zip -r deploy.zip . -x '*.git*'
+
+    - name: Deploy to EB
+      uses: einaregilsson/beanstalk-deploy@v22
+      with:
+        aws_access_key: ${{ AWS_ACCESS_ID }}
+        aws_secret_key: ${{ AWS_SECRET }}
+        application_name: docker-react
+        environment_name: docker-react-env
+        version_label: ${{ github.sha }}
+        region: ap-northeast-1
+        deployment_package: deploy.zip
