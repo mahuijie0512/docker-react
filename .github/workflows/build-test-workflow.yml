@@ -1,0 +1,21 @@
+name: Build and test docker-react 
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Build Docker image
+      run: docker build -t mhj/docker-react -f Dockerfile.dev .
+      
+    - name: Run tests
+      run: docker run mhj/docker-react npm run test -- --coverage --watchAll=false
